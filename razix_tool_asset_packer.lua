@@ -20,6 +20,7 @@ project "RazixAssetPacker"
          "%{IncludeDir.Razix}",
          -- GLM
         "%{IncludeDir.glm}",
+        "%{IncludeDir.cereal}"
     }
 
     files

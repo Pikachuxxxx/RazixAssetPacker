@@ -3,8 +3,6 @@
 #include <glm/glm.hpp>
 #include <stdint.h>
 
-#define AST_VERSION 1
-
 namespace Razix {
     namespace Tool {
         namespace AssetPacker {
@@ -21,9 +19,9 @@ namespace Razix {
             /* Header contents of the binary asset file */
             struct BINFileHeader
             {
-                uint32_t magic;   /* Magic number to verify that this is a Razix Asset file indeed  */
-                uint8_t  version; /* Version of the asset file                                      */
-                uint8_t  type;    /* Type of the asset : AssetType                                  */
+                const char* magic;   /* Magic number to verify that this is a Razix Asset file indeed  */
+                uint8_t     version; /* Version of the asset file                                      */
+                uint8_t     type;    /* Type of the asset : AssetType                                  */
             };
 
             struct BINMeshFileHeader
