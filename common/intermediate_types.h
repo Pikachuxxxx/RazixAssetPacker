@@ -7,10 +7,10 @@
 
 #include <glm/glm.hpp>
 
+#include "Razix/AssetSystem/RZAssetFileSpec.h"
+
 #include "Razix/Graphics/Materials/RZMaterialData.h"
 #include "Razix/Graphics/RZVertexFormat.h"
-
-#include "bin_file_header.h"
 
 namespace Razix {
     namespace Graphics {
@@ -40,7 +40,7 @@ namespace Razix {
             };
 
             //--------------------------------------------------------------------------------
-            //Mesh Import Result
+            // Mesh Import Result
             //--------------------------------------------------------------------------------
 
             struct MeshImportResult
@@ -54,6 +54,22 @@ namespace Razix {
                 glm::vec3                                      max_extents;
                 glm::vec3                                      min_extents;
             };
+
+            //--------------------------------------------------------------------------------
+            // Hierarchy
+            //--------------------------------------------------------------------------------
+
+            struct Node
+            {
+                Node*     children = nullptr;
+                uint32_t  numChildren;
+                glm::vec3 translation;
+                glm::quat rotation;
+                glm::vec3 scale;
+                char      name[250];
+                char      nodeType[25];
+            };
+
         }    // namespace AssetPacker
     }        // namespace Tool
 }    // namespace Razix

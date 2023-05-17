@@ -4,6 +4,12 @@
 #include <fstream>
 #include <iostream>
 
+#include "Razix/AssetSystem/RZAssetFileSpec.h"
+
+#include <assimp/material.h>
+
+using namespace Razix::AssetSystem;
+
 #define WRITE_AND_OFFSET(stream, dest, size, offset) \
     stream.write((char*) dest, size);                \
     offset += size;                                  \
@@ -50,23 +56,31 @@ namespace Razix {
                         magic[16] = 'e';
                         magic[17] = 't';
 
-                        fh.magic   = magic;
+                        //fh.magic   = magic;
+                        memcpy(fh.magic, magic, sizeof(char) * 18);
                         fh.version = RAZIX_ASSET_VERSION;
                         fh.type    = ASSET_MESH;
 
                         BINMeshFileHeader header{};
 
                         // Copy Name
-                        strcpy(&header.name[0], import_result.name.c_str());
+                        strcpy_s(header.name, submesh.name);
                         header.name[import_result.name.size()] = '\0';
 
                         header.index_count           = submesh.index_count;
                         header.vertex_count          = submesh.vertex_count;
-                        header.skeletal_vertex_count = import_result.skeletal_vertices.size();
-                        header.material_count        = import_result.materials.size();
-                        header.mesh_count            = import_result.submeshes.size();
-                        header.max_extents           = import_result.max_extents;
-                        header.min_extents           = import_result.min_extents;
+                        header.skeletal_vertex_count = static_cast<uint32_t>(import_result.skeletal_vertices.size());
+                        header.material_count        = static_cast<uint32_t>(import_result.materials.size());
+                        header.mesh_count            = static_cast<uint32_t>(import_result.submeshes.size());
+                        header.max_extents           = submesh.max_extents;
+                        header.min_extents           = submesh.min_extents;
+                        header.base_index            = submesh.base_index;
+                        header.base_vertex           = submesh.base_vertex;
+                        header.material_index        = submesh.material_index;
+                        //header.materialName          = submesh.materialName;
+                        strcpy_s(header.materialName, &submesh.materialName[0]);
+
+                        std::cout << "Material Name : " << submesh.materialName << std::endl;
 
                         size_t offset = 0;
 
@@ -99,12 +113,9 @@ namespace Razix {
                             WRITE_AND_OFFSET(f, (char*) &subData[0], sizeof(uint32_t) * submesh.index_count, offset);
                         }
 
-                        // Write mesh headers
-                        if (import_result.submeshes.size() > 0) {
-                            WRITE_AND_OFFSET(f, (char*) &submesh, sizeof(SubMesh), offset);
-                        }
-
                         f.close();
+
+                        // TODO: Export material per submesh
 
                     } else
                         return false;

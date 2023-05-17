@@ -2,7 +2,9 @@
 
 #include "common/intermediate_types.h"
 
-#include <assimp/material.h>
+struct aiMaterial;
+struct aiScene;
+struct aiNode;
 
 namespace Razix {
     namespace Tool {
@@ -24,13 +26,20 @@ namespace Razix {
 
                 bool importMesh(const std::string& meshFilePath, MeshImportResult& result, MeshImportOptions& options = MeshImportOptions());
 
+                const Node* getRootNode() const { return rootNode; }
+
             private:
                 void readMaterial(const std::string& materialsDirectory, aiMaterial* aiMat, Graphics::MaterialData& material);
 
-                bool findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t index, aiTextureType textureType, std::string& material);
+                bool findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t index, uint32_t textureType, std::string& material);
+
+                void printHierarchy(const aiNode* node, const aiScene* scene, uint32_t depthIndex);
+
+                void extractHierarchy(Node* hierarchyNode, const aiNode* node, const aiScene* scene, uint32_t depthIndex);
 
             private:
-                bool m_IsGlTF = false;
+                bool  m_IsGlTF = false;
+                Node* rootNode;
             };
         }    // namespace AssetPacker
     }        // namespace Tool

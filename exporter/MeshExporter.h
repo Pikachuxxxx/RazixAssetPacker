@@ -2,8 +2,6 @@
 
 #include "common/intermediate_types.h"
 
-#include <assimp/material.h>
-
 namespace Razix {
     namespace Tool {
         namespace AssetPacker {

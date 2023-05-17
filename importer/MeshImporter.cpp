@@ -6,6 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/pbrmaterial.h>
 #include <assimp/postprocess.h>
+#include <assimp/material.h>
 #include <assimp/scene.h>
 #include <unordered_map>
 #include <unordered_set>
@@ -75,6 +76,14 @@ namespace Razix {
                 if (scene) {
                     result.name = meshName;
 
+                    // Now that the scene is loaded extract the Hierarchy for the Model
+                    // Print and Store in an intermediate DS
+                    printHierarchy(scene->mRootNode, scene, 0);
+
+                    rootNode = new Node;
+                    strcpy_s(rootNode->name, meshName.c_str());
+                    extractHierarchy(rootNode, scene->mRootNode, scene, 0);
+
                     result.submeshes.resize(scene->mNumMeshes);
                     result.materials.resize(scene->mNumMaterials);
 
@@ -118,7 +127,7 @@ namespace Razix {
                         if (submesh_name.length() == 0)
                             submesh_name = "submesh_" + std::to_string(i);
 
-                        strcpy(result.submeshes[i].name, submesh_name.c_str());
+                        strcpy_s(result.submeshes[i].name, submesh_name.c_str());
                         result.submeshes[i].index_count  = scene->mMeshes[i]->mNumFaces * 3;
                         result.submeshes[i].vertex_count = scene->mMeshes[i]->mNumVertices;
                         result.submeshes[i].base_index   = index_count;
@@ -140,13 +149,14 @@ namespace Razix {
                     int     idx          = 0;
                     int     vertex_index = 0;
 
-                    for (int i = 0; i < scene->mNumMeshes; i++) {
-                        temp_mesh                       = scene->mMeshes[i];
+                    for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
+                        temp_mesh = scene->mMeshes[i];
+
                         result.submeshes[i].max_extents = glm::vec3(temp_mesh->mVertices[0].x, temp_mesh->mVertices[0].y, temp_mesh->mVertices[0].z);
                         result.submeshes[i].min_extents = glm::vec3(temp_mesh->mVertices[0].x, temp_mesh->mVertices[0].y, temp_mesh->mVertices[0].z);
 
                         // Read vertex data
-                        for (int k = 0; k < scene->mMeshes[i]->mNumVertices; k++) {
+                        for (uint32_t k = 0; k < scene->mMeshes[i]->mNumVertices; k++) {
                             result.vertices[vertex_index].Position = glm::vec3(temp_mesh->mVertices[k].x, temp_mesh->mVertices[k].y, temp_mesh->mVertices[k].z);
                             glm::vec3 n                            = glm::vec3(temp_mesh->mNormals[k].x, temp_mesh->mNormals[k].y, temp_mesh->mNormals[k].z);
                             result.vertices[vertex_index].Normal   = n;
@@ -184,7 +194,7 @@ namespace Razix {
                         }
 
                         // Read the index data
-                        for (int j = 0; j < temp_mesh->mNumFaces; j++) {
+                        for (uint32_t j = 0; j < temp_mesh->mNumFaces; j++) {
                             result.indices[idx] = temp_mesh->mFaces[j].mIndices[0];
                             idx++;
                             result.indices[idx] = temp_mesh->mFaces[j].mIndices[1];
@@ -295,10 +305,10 @@ namespace Razix {
                 }
             }
 
-            bool MeshImporter::findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t index, aiTextureType textureType, std::string& material)
+            bool MeshImporter::findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t index, uint32_t textureType, std::string& material)
             {
                 aiString ai_path("");
-                aiReturn texture_found = aiMat->GetTexture(textureType, index, &ai_path);
+                aiReturn texture_found = aiMat->GetTexture((aiTextureType)textureType, index, &ai_path);
                 if (texture_found == aiReturn_FAILURE)
                     return false;
 
@@ -315,6 +325,48 @@ namespace Razix {
                 return true;
             }
 
+            void MeshImporter::printHierarchy(const aiNode* node, const aiScene* scene, uint32_t depthIndex)
+            {
+                std::string indent;
+                for (uint32_t j = 0; j < depthIndex; j++)
+                    indent.append("  ");
+
+                for (uint32_t i = 0; i < node->mNumChildren; i++) {
+                    aiVector3D   translation, scale;
+                    aiQuaternion rotation;
+                    node->mChildren[i]->mTransformation.Decompose(scale, rotation, translation);
+
+                    std::cout << indent << "|-" << node->mChildren[i]->mName.C_Str() << " \n"
+                              << indent << "  Transform : (" << translation.x << ", " << translation.y << ", " << translation.z << ")" << std::endl
+                              << indent << "  Type : " << (node->mChildren[i]->mNumMeshes ? "Mesh" : "Transform") << std::endl;
+                    printHierarchy(node->mChildren[i], scene, ++depthIndex);
+                    depthIndex--;
+                }
+            }
+
+            void MeshImporter::extractHierarchy(Node* hierarchyNode, const aiNode* node, const aiScene* scene, uint32_t depthIndex)
+            {
+                hierarchyNode->numChildren = node->mNumChildren;
+                hierarchyNode->children    = new Node[node->mNumChildren];
+
+                for (uint32_t i = 0; i < node->mNumChildren; i++) {
+                    auto& child = hierarchyNode->children[i];
+                    strcpy_s(child.name, node->mChildren[i]->mName.C_Str());
+                    const char* type = node->mChildren[i]->mNumMeshes ? "$MESH" : "$TRANSFORM";
+                    strcpy_s(child.nodeType, type);
+
+                    aiVector3D   translation, scale;
+                    aiQuaternion rotation;
+                    node->mChildren[i]->mTransformation.Decompose(scale, rotation, translation);
+
+                    child.translation = glm::vec3(translation.x, translation.y, translation.z);
+                    child.scale       = glm::vec3(scale.x, scale.y, scale.z);
+                    child.rotation    = glm::quat(rotation.w, rotation.x, rotation.y, rotation.z);
+
+                    extractHierarchy(&child, node->mChildren[i], scene, ++depthIndex);
+                    depthIndex--;
+                }
+            }
         }    // namespace AssetPacker
     }        // namespace Tool
 }    // namespace Razix
