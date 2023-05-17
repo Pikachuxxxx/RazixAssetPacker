@@ -13,13 +13,15 @@ int main(int argc, char* argv[])
     Razix::Tool::AssetPacker::MeshImportOptions import_options{};
 
     // Importer
-    Razix::Tool::AssetPacker::MeshImporter importer;
-    bool                                   result = importer.importMesh("C:/Dev/Game Engines/Razix/Sandbox/Assets/Meshes/Source/YBot.gltf", import_result, import_options);
+    Razix::Tool::AssetPacker::MeshImporter* importer = new Razix::Tool::AssetPacker::MeshImporter;
+    bool                                    result   = importer->importMesh("C:/Dev/Game Engines/Razix/Sandbox/Assets/Meshes/Source/Sponza/Sponza.gltf", import_result, import_options);
 
     if (!result) {
         std::cout << "[ERROR!] Mesh Importing Failed" << std::endl;
         return EXIT_FAILURE;
     }
+
+    delete importer;
 
     // Export Options
     Razix::Tool::AssetPacker::MeshExportOptions export_options{};

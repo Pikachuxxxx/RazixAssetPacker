@@ -4,9 +4,9 @@
 #include <iostream>
 
 #include <assimp/Importer.hpp>
+#include <assimp/material.h>
 #include <assimp/pbrmaterial.h>
 #include <assimp/postprocess.h>
-#include <assimp/material.h>
 #include <assimp/scene.h>
 #include <unordered_map>
 #include <unordered_set>
@@ -76,13 +76,18 @@ namespace Razix {
                 if (scene) {
                     result.name = meshName;
 
-                    // Now that the scene is loaded extract the Hierarchy for the Model
-                    // Print and Store in an intermediate DS
-                    printHierarchy(scene->mRootNode, scene, 0);
+                    if (scene->mRootNode->mNumChildren) {
+                        // Now that the scene is loaded extract the Hierarchy for the Model
+                        // Print and Store in an intermediate DS
+                        printHierarchy(scene->mRootNode, scene, 0);
 
-                    rootNode = new Node;
-                    strcpy_s(rootNode->name, meshName.c_str());
-                    extractHierarchy(rootNode, scene->mRootNode, scene, 0);
+                        rootNode       = new Node;
+                        rootNode->name = meshName.c_str();
+                        extractHierarchy(rootNode, scene->mRootNode, scene, 0);
+                    } else {
+                        rootNode       = new Node;
+                        rootNode->name = meshName.c_str();
+                    }
 
                     result.submeshes.resize(scene->mNumMeshes);
                     result.materials.resize(scene->mNumMaterials);
@@ -149,8 +154,20 @@ namespace Razix {
                     int     idx          = 0;
                     int     vertex_index = 0;
 
+                    // Create a flat hierarchy if there's not hierarchy and a the Model has a bunch of submeshes
+                    if (!scene->mRootNode->mNumChildren) {
+                        rootNode->numChildren = scene->mNumMeshes;
+                        rootNode->children    = new Node[scene->mNumMeshes];
+                    }
+
                     for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
                         temp_mesh = scene->mMeshes[i];
+
+                        // Create a flat hierarchy if there's not hierarchy and a the Model has a bunch of submeshes
+                        if (!scene->mRootNode->mNumChildren) {
+                            rootNode->children[i].nodeType = "$MESH";
+                            rootNode->children[i].name     = scene->mMeshes[i]->mName.C_Str();
+                        }
 
                         result.submeshes[i].max_extents = glm::vec3(temp_mesh->mVertices[0].x, temp_mesh->mVertices[0].y, temp_mesh->mVertices[0].z);
                         result.submeshes[i].min_extents = glm::vec3(temp_mesh->mVertices[0].x, temp_mesh->mVertices[0].y, temp_mesh->mVertices[0].z);
@@ -308,7 +325,7 @@ namespace Razix {
             bool MeshImporter::findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t index, uint32_t textureType, std::string& material)
             {
                 aiString ai_path("");
-                aiReturn texture_found = aiMat->GetTexture((aiTextureType)textureType, index, &ai_path);
+                aiReturn texture_found = aiMat->GetTexture((aiTextureType) textureType, index, &ai_path);
                 if (texture_found == aiReturn_FAILURE)
                     return false;
 
@@ -327,6 +344,10 @@ namespace Razix {
 
             void MeshImporter::printHierarchy(const aiNode* node, const aiScene* scene, uint32_t depthIndex)
             {
+                if (depthIndex == 0) {
+                    std::cout << "|-" << node->mName.C_Str() << " \n";
+                }
+
                 std::string indent;
                 for (uint32_t j = 0; j < depthIndex; j++)
                     indent.append("  ");
@@ -347,24 +368,26 @@ namespace Razix {
             void MeshImporter::extractHierarchy(Node* hierarchyNode, const aiNode* node, const aiScene* scene, uint32_t depthIndex)
             {
                 hierarchyNode->numChildren = node->mNumChildren;
-                hierarchyNode->children    = new Node[node->mNumChildren];
+                if (hierarchyNode->numChildren) {
+                    hierarchyNode->children = new Node[node->mNumChildren];
 
-                for (uint32_t i = 0; i < node->mNumChildren; i++) {
-                    auto& child = hierarchyNode->children[i];
-                    strcpy_s(child.name, node->mChildren[i]->mName.C_Str());
-                    const char* type = node->mChildren[i]->mNumMeshes ? "$MESH" : "$TRANSFORM";
-                    strcpy_s(child.nodeType, type);
+                    for (uint32_t i = 0; i < node->mNumChildren; i++) {
+                        auto& child      = hierarchyNode->children[i];
+                        child.name       = node->mChildren[i]->mName.C_Str();
+                        const char* type = node->mChildren[i]->mNumMeshes ? "$MESH" : "$TRANSFORM";
+                        child.nodeType   = type;
 
-                    aiVector3D   translation, scale;
-                    aiQuaternion rotation;
-                    node->mChildren[i]->mTransformation.Decompose(scale, rotation, translation);
+                        aiVector3D   translation, scale;
+                        aiQuaternion rotation;
+                        node->mChildren[i]->mTransformation.Decompose(scale, rotation, translation);
 
-                    child.translation = glm::vec3(translation.x, translation.y, translation.z);
-                    child.scale       = glm::vec3(scale.x, scale.y, scale.z);
-                    child.rotation    = glm::quat(rotation.w, rotation.x, rotation.y, rotation.z);
+                        child.translation = glm::vec3(translation.x, translation.y, translation.z);
+                        child.scale       = glm::vec3(scale.x, scale.y, scale.z);
+                        child.rotation    = glm::quat(rotation.w, rotation.x, rotation.y, rotation.z);
 
-                    extractHierarchy(&child, node->mChildren[i], scene, ++depthIndex);
-                    depthIndex--;
+                        extractHierarchy(&child, node->mChildren[i], scene, ++depthIndex);
+                        depthIndex--;
+                    }
                 }
             }
         }    // namespace AssetPacker

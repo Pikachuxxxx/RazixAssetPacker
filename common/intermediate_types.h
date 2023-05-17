@@ -61,13 +61,16 @@ namespace Razix {
 
             struct Node
             {
-                Node*     children = nullptr;
-                uint32_t  numChildren;
-                glm::vec3 translation;
-                glm::quat rotation;
-                glm::vec3 scale;
-                char      name[250];
-                char      nodeType[25];
+                Node*     children    = nullptr;
+                uint32_t  numChildren = 0;
+                glm::vec3 translation = glm::vec3(0.0f);
+                glm::quat rotation /*= glm::quat(0.0f)*/;
+                glm::vec3 scale     = glm::vec3(1.0f);
+                //char      name[250];
+                //char*     nodeType;
+                std::string name;
+                std::string nodeType;
+
             };
 
         }    // namespace AssetPacker
