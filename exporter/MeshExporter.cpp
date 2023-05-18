@@ -116,6 +116,26 @@ namespace Razix {
                         f.close();
 
                         // TODO: Export material per submesh
+                        if (import_result.materials.size() > 0) {
+                            auto materialName = submesh.materialName;
+                            auto materialIdx  = submesh.material_index;
+                            auto materialData = import_result.materials[materialIdx];
+
+                            std::string mat_export_path = options.outputDirectory + "/../Materials/" + materialName + ".rzmaterial";
+
+                            // Write only if it's a unique material
+                            std::ifstream ifile;
+                            ifile.open(mat_export_path);
+                            if (ifile)
+                                break;
+
+                            uint32_t offset = 0;
+
+                            std::fstream f_mat(mat_export_path, std::ios::out | std::ios::binary);
+                            if (f_mat.is_open()) {
+                                WRITE_AND_OFFSET(f_mat, (char*) &materialData, sizeof(Razix::Graphics::MaterialData), offset);
+                            }
+                        }
 
                     } else
                         return false;
