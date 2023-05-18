@@ -31,7 +31,7 @@ namespace Razix {
             private:
                 void readMaterial(const std::string& materialsDirectory, aiMaterial* aiMat, Graphics::MaterialData& material);
 
-                bool findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t index, uint32_t textureType, std::string& material);
+                bool findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t index, uint32_t textureType, char* material);
 
                 void printHierarchy(const aiNode* node, const aiScene* scene, uint32_t depthIndex);
 

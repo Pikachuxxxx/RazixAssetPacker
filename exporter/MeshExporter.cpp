@@ -28,7 +28,7 @@ namespace Razix {
                 for (size_t i = 0; i < import_result.submeshes.size(); i++) {
                     const auto submesh = import_result.submeshes[i];
 
-                    std::string export_path = options.outputDirectory + "/" + import_result.name + "/" + submesh.name + ".rzmesh";
+                    std::string export_path = options.outputDirectory + "/Cache/Meshes/" + submesh.name + ".rzmesh";
 
                     // Export the Mesh
                     std::fstream f(export_path, std::ios::out | std::ios::binary);
@@ -80,7 +80,7 @@ namespace Razix {
                         //header.materialName          = submesh.materialName;
                         strcpy_s(header.materialName, &submesh.materialName[0]);
 
-                        std::cout << "Material Name : " << submesh.materialName << std::endl;
+                        std::cout << "Exporting Mesh... : " << submesh.name << std::endl;
 
                         size_t offset = 0;
 
@@ -121,13 +121,9 @@ namespace Razix {
                             auto materialIdx  = submesh.material_index;
                             auto materialData = import_result.materials[materialIdx];
 
-                            std::string mat_export_path = options.outputDirectory + "/../Materials/" + materialName + ".rzmaterial";
+                            std::cout << "Exporting Material ... : " << materialName << std::endl;
 
-                            // Write only if it's a unique material
-                            std::ifstream ifile;
-                            ifile.open(mat_export_path);
-                            if (ifile)
-                                break;
+                            std::string mat_export_path = options.outputDirectory + "/../Materials/" + materialName + ".rzmaterial";
 
                             uint32_t offset = 0;
 

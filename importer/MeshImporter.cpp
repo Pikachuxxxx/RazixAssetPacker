@@ -118,7 +118,7 @@ namespace Razix {
                         }
 
                         // Store the Name
-                        material.m_Name = mat_name;
+                        strcpy_s(material.m_Name, mat_name.c_str());
                         // TODO: Set the Surface Type and Material Type
                         readMaterial(directoryPath, assimp_material, material);
 
@@ -322,7 +322,7 @@ namespace Razix {
                 }
             }
 
-            bool MeshImporter::findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t index, uint32_t textureType, std::string& material)
+            bool MeshImporter::findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t index, uint32_t textureType, char* material)
             {
                 aiString ai_path("");
                 aiReturn texture_found = aiMat->GetTexture((aiTextureType) textureType, index, &ai_path);
@@ -337,7 +337,9 @@ namespace Razix {
 
                 out_path = materialsDirectory + out_path;
 
-                material = out_path;
+                //material = out_path;
+
+                strcpy(material, out_path.c_str());
 
                 return true;
             }
