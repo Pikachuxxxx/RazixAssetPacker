@@ -337,8 +337,6 @@ namespace Razix {
 
                 out_path = materialsDirectory + out_path;
 
-                //material = out_path;
-
                 strcpy(material, out_path.c_str());
 
                 return true;

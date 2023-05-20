@@ -7,6 +7,8 @@
 #include "Razix/AssetSystem/RZAssetFileSpec.h"
 
 #include <assimp/material.h>
+#include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
 
 using namespace Razix::AssetSystem;
 
@@ -123,14 +125,38 @@ namespace Razix {
 
                             std::cout << "Exporting Material ... : " << materialName << std::endl;
 
-                            std::string mat_export_path = options.outputDirectory + "/../Materials/" + materialName + ".rzmaterial";
+                            std::string mat_export_path = options.outputDirectory + "/Materials/" + materialName + ".rzmaterial";
+
+                            // Remove the Export Directory from material textures paths
+                            uint32_t letters_size = static_cast<uint32_t>(options.outputDirectory.size());
+
+                            auto path = "//Assets/" + std::string(materialData.m_MaterialTextures.albedo + letters_size);
+                            memcpy(materialData.m_MaterialTextures.albedo, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.ao + letters_size);
+                            memcpy(materialData.m_MaterialTextures.ao, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.emissive + letters_size);
+                            memcpy(materialData.m_MaterialTextures.emissive, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.metallic + letters_size);
+                            memcpy(materialData.m_MaterialTextures.metallic, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.normal + letters_size);
+                            memcpy(materialData.m_MaterialTextures.normal, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.roughness + letters_size);
+                            memcpy(materialData.m_MaterialTextures.roughness, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.specular + letters_size);
+                            memcpy(materialData.m_MaterialTextures.specular, path.c_str(), 250);
 
                             uint32_t offset = 0;
 
+#ifdef EXPORT_BIN_MATERIAL
                             std::fstream f_mat(mat_export_path, std::ios::out | std::ios::binary);
                             if (f_mat.is_open()) {
                                 WRITE_AND_OFFSET(f_mat, (char*) &materialData, sizeof(Razix::Graphics::MaterialData), offset);
                             }
+#endif    // EXPORT_BIN_MATERIAL
+
+                            std::ofstream             opAppStream(mat_export_path);
+                            cereal::JSONOutputArchive defArchive(opAppStream);
+                            defArchive(cereal::make_nvp(materialName, materialData));
                         }
 
                     } else

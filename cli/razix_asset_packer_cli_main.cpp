@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 
     // Importer
     Razix::Tool::AssetPacker::MeshImporter* importer = new Razix::Tool::AssetPacker::MeshImporter;
-    bool                                    result   = importer->importMesh("C:/Dev/Game Engines/Razix/Sandbox/Assets/Meshes/Source/chinesedragon.gltf", import_result, import_options);
+    bool                                    result   = importer->importMesh("C:/Dev/Game Engines/Razix/Sandbox/Assets/Models/Chess/scene.gltf", import_result, import_options);
 
     if (!result) {
         std::cout << "[ERROR!] Mesh Importing Failed" << std::endl;
