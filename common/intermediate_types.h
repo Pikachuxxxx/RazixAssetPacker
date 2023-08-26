@@ -1,5 +1,7 @@
 #pragma once
 
+// Based on https://github.com/diharaw/asset-core
+
 #include <cstdint>
 #include <memory>
 #include <string>

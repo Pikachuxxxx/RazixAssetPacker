@@ -1,6 +1,7 @@
 #include "MeshExporter.h"
 
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 
@@ -30,7 +31,12 @@ namespace Razix {
                 for (size_t i = 0; i < import_result.submeshes.size(); i++) {
                     const auto submesh = import_result.submeshes[i];
 
-                    std::string export_path = options.outputDirectory + "/Cache/Meshes/" + submesh.name + ".rzmesh";
+                    std::string export_path = options.outputDirectory + "/" + import_result.name + submesh.name + ".rzmesh";
+
+                    // Don't export if file exists
+                    bool exist = std::filesystem::exists(export_path);
+                    if (exist)
+                        continue;
 
                     // Export the Mesh
                     std::fstream f(export_path, std::ios::out | std::ios::binary);
@@ -66,7 +72,7 @@ namespace Razix {
                         BINMeshFileHeader header{};
 
                         // Copy Name
-                        strcpy_s(header.name, submesh.name);
+                        strcpy_s(header.name, std::string(import_result.name + submesh.name).c_str());
                         header.name[import_result.name.size()] = '\0';
 
                         header.index_count           = submesh.index_count;
@@ -82,7 +88,7 @@ namespace Razix {
                         //header.materialName          = submesh.materialName;
                         strcpy_s(header.materialName, &submesh.materialName[0]);
 
-                        std::cout << "Exporting Mesh... : " << submesh.name << std::endl;
+                        std::cout << "Exporting Mesh... : " << import_result.name + submesh.name << std::endl;
 
                         size_t offset = 0;
 
@@ -130,20 +136,20 @@ namespace Razix {
                             // Remove the Export Directory from material textures paths
                             uint32_t letters_size = static_cast<uint32_t>(options.outputDirectory.size());
 
-                            auto path = "//Assets/" + std::string(materialData.m_MaterialTextures.albedo + letters_size);
-                            memcpy(materialData.m_MaterialTextures.albedo, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.ao + letters_size);
-                            memcpy(materialData.m_MaterialTextures.ao, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.emissive + letters_size);
-                            memcpy(materialData.m_MaterialTextures.emissive, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.metallic + letters_size);
-                            memcpy(materialData.m_MaterialTextures.metallic, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.normal + letters_size);
-                            memcpy(materialData.m_MaterialTextures.normal, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.roughness + letters_size);
-                            memcpy(materialData.m_MaterialTextures.roughness, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTextures.specular + letters_size);
-                            memcpy(materialData.m_MaterialTextures.specular, path.c_str(), 250);
+                            auto path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.albedo + letters_size);
+                            memcpy(materialData.m_MaterialTexturePaths.albedo, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.ao + letters_size);
+                            memcpy(materialData.m_MaterialTexturePaths.ao, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.emissive + letters_size);
+                            memcpy(materialData.m_MaterialTexturePaths.emissive, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.metallic + letters_size);
+                            memcpy(materialData.m_MaterialTexturePaths.metallic, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.normal + letters_size);
+                            memcpy(materialData.m_MaterialTexturePaths.normal, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.roughness + letters_size);
+                            memcpy(materialData.m_MaterialTexturePaths.roughness, path.c_str(), 250);
+                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.specular + letters_size);
+                            memcpy(materialData.m_MaterialTexturePaths.specular, path.c_str(), 250);
 
                             uint32_t offset = 0;
 

@@ -1,5 +1,7 @@
 #pragma once
 
+// Based on https://github.com/diharaw/asset-core
+
 #include "common/intermediate_types.h"
 
 namespace Razix {

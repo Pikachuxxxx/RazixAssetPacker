@@ -6,7 +6,7 @@ include 'Scripts/premake/common/internal_includes.lua'
 project "RazixAssetPacker_CLI"
     kind "ConsoleApp"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     staticruntime "off"
 
     includedirs
@@ -38,7 +38,7 @@ project "RazixAssetPacker_CLI"
 
     filter "system:windows"
         systemversion "latest"
-        cppdialect "C++17"
+        cppdialect "C++20"
         staticruntime "off"
 
     filter "configurations:Debug"

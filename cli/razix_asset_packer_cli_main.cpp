@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 
     // Importer
     Razix::Tool::AssetPacker::MeshImporter* importer = new Razix::Tool::AssetPacker::MeshImporter;
-    bool                                    result   = importer->importMesh("C:/Dev/Game Engines/Razix/Sandbox/Assets/Models/Chess/scene.gltf", import_result, import_options);
+    bool                                    result   = importer->importMesh("C:/Dev/Game Engines/Razix/Sandbox/Assets/Models/Battle of the Trash god.glb", import_result, import_options);
 
     if (!result) {
         std::cout << "[ERROR!] Mesh Importing Failed" << std::endl;
@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 
     // Export Options
     Razix::Tool::AssetPacker::MeshExportOptions export_options{};
-    export_options.outputDirectory = "C:/Dev/Game Engines/Razix/Sandbox/Assets/";
+    export_options.outputDirectory = "C:/Dev/Game Engines/Razix/Sandbox/Assets/Cache/Meshes/Battle of the Trash god/";
     // Exporter
     Razix::Tool::AssetPacker::MeshExporter exporter;
     result = exporter.exportMesh(import_result, export_options);

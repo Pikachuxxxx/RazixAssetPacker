@@ -1,5 +1,7 @@
 #pragma once
 
+// Based on https://github.com/diharaw/asset-core
+
 #include "common/intermediate_types.h"
 
 struct aiMaterial;
@@ -24,7 +26,7 @@ namespace Razix {
                 MeshImporter()  = default;
                 ~MeshImporter() = default;
 
-                bool importMesh(const std::string& meshFilePath, MeshImportResult& result, MeshImportOptions& options = MeshImportOptions());
+                bool importMesh(const std::string& meshFilePath, MeshImportResult& result, MeshImportOptions options = MeshImportOptions());
 
                 const Node* getRootNode() const { return rootNode; }
 
