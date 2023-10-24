@@ -61,18 +61,18 @@ namespace Razix {
             // Hierarchy
             //--------------------------------------------------------------------------------
 
+            // TODO: Export this to a .rzmodel file for hierarchy info
             struct Node
             {
                 Node*     children    = nullptr;
                 uint32_t  numChildren = 0;
                 glm::vec3 translation = glm::vec3(0.0f);
                 glm::quat rotation /*= glm::quat(0.0f)*/;
-                glm::vec3 scale     = glm::vec3(1.0f);
+                glm::vec3 scale = glm::vec3(1.0f);
                 //char      name[250];
                 //char*     nodeType;
                 std::string name;
-                std::string nodeType;
-
+                std::string nodeType;    // $MESH, $TRANSFORM, $MATERIAL
             };
 
         }    // namespace AssetPacker

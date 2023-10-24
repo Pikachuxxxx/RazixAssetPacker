@@ -10,7 +10,7 @@ namespace Razix {
 
             struct MeshExportOptions
             {
-                std::string outputDirectory;
+                std::string assetsOutputDirectory;
                 bool        useCompression = true;
                 bool        outputMetadata = false;
             };

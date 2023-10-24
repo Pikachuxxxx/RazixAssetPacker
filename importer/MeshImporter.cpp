@@ -64,6 +64,8 @@ namespace Razix {
                 if (extension == "gltf" || extension == "glb")
                     m_IsGlTF = true;
 
+                // Let's make a bold assumption here if the model is of GLTF format it has WORLFLOW_PBR_METAL_ROUGHNESS_AO_COMBINED in BGR order
+
                 std::cout << "Importing Mesh...\n";
 
                 auto start = std::chrono::high_resolution_clock::now();
@@ -113,8 +115,8 @@ namespace Razix {
                         if (!mat_name.empty())
                             std::cout << "Loading Material... : " << mat_name << std::endl;
                         else {
-                            mat_name = "Default Material";
-                            std::cout << "No Material. Loading Default... : " << mat_name << std::endl;
+                            mat_name = "Mat_" + meshName + "_" + std::to_string(i);
+                            std::cout << "No Material...: " << mat_name << std::endl;
                         }
 
                         // Store the Name
@@ -257,7 +259,9 @@ namespace Razix {
             {
                 // Base Color
                 {
-                    bool base_color_texture_found = findTexurePath(materialsDirectory, aiMat, 0, aiTextureType_DIFFUSE, material.m_MaterialTexturePaths.albedo);
+                    //material.m_MaterialProperties.workflow = (u32) Razix::Graphics::WorkFlow::WORLFLOW_LIT_PHONG;
+
+                    bool base_color_texture_found = findTexurePath(materialsDirectory, aiMat, aiTextureType_DIFFUSE, 0, material.m_MaterialTexturePaths.albedo);
                     if (base_color_texture_found)
                         std::cout << "Diffuse Texture : " << material.m_MaterialTexturePaths.albedo << std::endl;
                     else {
@@ -276,8 +280,9 @@ namespace Razix {
                      * If it's a GlTF we use a combined metallic roughness AO texture so 
                      */
                     if (m_IsGlTF) {
-                        // Refer AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE
-                        bool metal_roughness_texture_found = findTexurePath(materialsDirectory, aiMat, 0, aiTextureType_UNKNOWN, material.m_MaterialTexturePaths.metallic);
+                        material.m_MaterialProperties.workflow = (u32) Razix::Graphics::WorkFlow::WORLFLOW_PBR_METAL_ROUGHNESS_AO_COMBINED;
+
+                        bool metal_roughness_texture_found = findTexurePath(materialsDirectory, aiMat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, material.m_MaterialTexturePaths.metallicRoughnessAO);
                         if (metal_roughness_texture_found)
                             std::cout << "MetallicRoughness Texture : " << material.m_MaterialTexturePaths.metallic << std::endl;
 
@@ -297,14 +302,16 @@ namespace Razix {
                         }
 
                     } else {
-                        bool roughness_texture_found = findTexurePath(materialsDirectory, aiMat, 0, aiTextureType_SHININESS, material.m_MaterialTexturePaths.roughness);
+                        material.m_MaterialProperties.workflow = (u32) Razix::Graphics::WorkFlow::WORLFLOW_PBR_METAL_ROUGHNESS_AO_SEPARATE;
+
+                        bool roughness_texture_found = findTexurePath(materialsDirectory, aiMat, aiTextureType_SHININESS, 0, material.m_MaterialTexturePaths.roughness);
                         if (roughness_texture_found)
                             std::cout << "Roughness Texture : " << material.m_MaterialTexturePaths.roughness << std::endl;
 
                         if (!roughness_texture_found)
                             material.m_MaterialProperties.roughnessColor = 0.25f;
 
-                        bool metallic_texture_found = findTexurePath(materialsDirectory, aiMat, 0, aiTextureType_AMBIENT, material.m_MaterialTexturePaths.metallic);
+                        bool metallic_texture_found = findTexurePath(materialsDirectory, aiMat, aiTextureType_AMBIENT, 0, material.m_MaterialTexturePaths.metallic);
 
                         if (metallic_texture_found)
                             std::cout << "Metallic Texture : " << material.m_MaterialTexturePaths.metallic << std::endl;
@@ -315,14 +322,21 @@ namespace Razix {
 
                     // Normal
                     {
-                        bool normal_texture_found = findTexurePath(materialsDirectory, aiMat, 0, aiTextureType_NORMALS, material.m_MaterialTexturePaths.normal);
+                        bool normal_texture_found = findTexurePath(materialsDirectory, aiMat, aiTextureType_NORMALS, 0, material.m_MaterialTexturePaths.normal);
                         if (normal_texture_found)
                             std::cout << "Normal Texture : " << material.m_MaterialTexturePaths.normal << std::endl;
+                    }
+
+                    // EMISSIVE
+                    {
+                        bool emissive_texture_found = findTexurePath(materialsDirectory, aiMat, aiTextureType_EMISSIVE, 0, material.m_MaterialTexturePaths.emissive);
+                        if (emissive_texture_found)
+                            std::cout << "Emissive Texture : " << material.m_MaterialTexturePaths.emissive << std::endl;
                     }
                 }
             }
 
-            bool MeshImporter::findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t index, uint32_t textureType, char* material)
+            bool MeshImporter::findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t textureType, uint32_t index, char* material)
             {
                 aiString ai_path("");
                 aiReturn texture_found = aiMat->GetTexture((aiTextureType) textureType, index, &ai_path);
@@ -337,7 +351,7 @@ namespace Razix {
 
                 out_path = materialsDirectory + out_path;
 
-                strcpy(material, out_path.c_str());
+                strcpy_s(material, 250 * sizeof(char), out_path.c_str());
 
                 return true;
             }

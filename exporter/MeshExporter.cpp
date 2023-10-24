@@ -11,6 +11,8 @@
 #include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
 
+#include <filesystem>
+
 using namespace Razix::AssetSystem;
 
 #define WRITE_AND_OFFSET(stream, dest, size, offset) \
@@ -26,12 +28,17 @@ namespace Razix {
             {
                 auto start = std::chrono::high_resolution_clock::now();
 
-                std::string materials_path = "Materials/";
+                // Create a directory in the name of the model scene
+
+                std::string materials_path = options.assetsOutputDirectory + "Materials/" + import_result.name + "/";
+                std::filesystem::create_directory(materials_path);
+                std::string mesh_path = options.assetsOutputDirectory + "/Cache/Meshes/" + import_result.name + "/";
+                std::filesystem::create_directory(mesh_path);
 
                 for (size_t i = 0; i < import_result.submeshes.size(); i++) {
                     const auto submesh = import_result.submeshes[i];
 
-                    std::string export_path = options.outputDirectory + "/" + import_result.name + submesh.name + ".rzmesh";
+                    std::string export_path = mesh_path + import_result.name + "_" + submesh.name + ".rzmesh";
 
                     // Don't export if file exists
                     bool exist = std::filesystem::exists(export_path);
@@ -131,25 +138,26 @@ namespace Razix {
 
                             std::cout << "Exporting Material ... : " << materialName << std::endl;
 
-                            std::string mat_export_path = options.outputDirectory + "/Materials/" + materialName + ".rzmaterial";
+                            std::string mat_export_path = materials_path + materialName + ".rzmaterial";
 
                             // Remove the Export Directory from material textures paths
-                            uint32_t letters_size = static_cast<uint32_t>(options.outputDirectory.size());
+                            //uint32_t letters_size = static_cast<uint32_t>(materials_path.size());
 
-                            auto path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.albedo + letters_size);
-                            memcpy(materialData.m_MaterialTexturePaths.albedo, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.ao + letters_size);
-                            memcpy(materialData.m_MaterialTexturePaths.ao, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.emissive + letters_size);
-                            memcpy(materialData.m_MaterialTexturePaths.emissive, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.metallic + letters_size);
-                            memcpy(materialData.m_MaterialTexturePaths.metallic, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.normal + letters_size);
-                            memcpy(materialData.m_MaterialTexturePaths.normal, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.roughness + letters_size);
-                            memcpy(materialData.m_MaterialTexturePaths.roughness, path.c_str(), 250);
-                            path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.specular + letters_size);
-                            memcpy(materialData.m_MaterialTexturePaths.specular, path.c_str(), 250);
+                            // Needs more improvements and VFS search mechanism
+                            //auto path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.albedo + letters_size);
+                            //memcpy(materialData.m_MaterialTexturePaths.albedo, path.c_str(), 250);
+                            //path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.ao + letters_size);
+                            //memcpy(materialData.m_MaterialTexturePaths.ao, path.c_str(), 250);
+                            //path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.emissive + letters_size);
+                            //memcpy(materialData.m_MaterialTexturePaths.emissive, path.c_str(), 250);
+                            //path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.metallic + letters_size);
+                            //memcpy(materialData.m_MaterialTexturePaths.metallic, path.c_str(), 250);
+                            //path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.normal + letters_size);
+                            //memcpy(materialData.m_MaterialTexturePaths.normal, path.c_str(), 250);
+                            //path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.roughness + letters_size);
+                            //memcpy(materialData.m_MaterialTexturePaths.roughness, path.c_str(), 250);
+                            //path = "//Assets/" + std::string(materialData.m_MaterialTexturePaths.specular + letters_size);
+                            //memcpy(materialData.m_MaterialTexturePaths.specular, path.c_str(), 250);
 
                             uint32_t offset = 0;
 
@@ -159,7 +167,6 @@ namespace Razix {
                                 WRITE_AND_OFFSET(f_mat, (char*) &materialData, sizeof(Razix::Graphics::MaterialData), offset);
                             }
 #endif    // EXPORT_BIN_MATERIAL
-
                             std::ofstream             opAppStream(mat_export_path);
                             cereal::JSONOutputArchive defArchive(opAppStream);
                             defArchive(cereal::make_nvp(materialName, materialData));

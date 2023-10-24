@@ -32,16 +32,13 @@ namespace Razix {
 
             private:
                 void readMaterial(const std::string& materialsDirectory, aiMaterial* aiMat, Graphics::MaterialData& material);
-
-                bool findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t index, uint32_t textureType, char* material);
-
+                bool findTexurePath(const std::string& materialsDirectory, aiMaterial* aiMat, uint32_t textureType, uint32_t index, char* material);
                 void printHierarchy(const aiNode* node, const aiScene* scene, uint32_t depthIndex);
-
                 void extractHierarchy(Node* hierarchyNode, const aiNode* node, const aiScene* scene, uint32_t depthIndex);
 
             private:
                 bool  m_IsGlTF = false;
-                Node* rootNode;
+                Node* rootNode = nullptr;
             };
         }    // namespace AssetPacker
     }        // namespace Tool
