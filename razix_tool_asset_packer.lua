@@ -43,7 +43,8 @@ project "RazixAssetPacker"
 
     links
     {
-        "assimp"
+        "assimp",
+        "meshoptimizer"
     }
 
     filter "system:windows"
