@@ -47,14 +47,14 @@ namespace Razix {
 
             struct MeshImportResult
             {
-                std::string                                    name;
-                std::vector<Razix::Graphics::RZVertex>         vertices;
-                std::vector<Razix::Graphics::RZSkeletalVertex> skeletal_vertices;
-                std::vector<uint32_t>                          indices;
-                std::vector<SubMesh>                           submeshes;
-                std::vector<Graphics::MaterialData>            materials;
-                glm::vec3                                      max_extents;
-                glm::vec3                                      min_extents;
+                std::string                         name;
+                Razix::Graphics::RZVertex           vertices;
+                Razix::Graphics::RZSkeletalVertex   skeletal_vertices;
+                std::vector<uint32_t>               indices;
+                std::vector<SubMesh>                submeshes;
+                std::vector<Graphics::MaterialData> materials;
+                glm::vec3                           max_extents;
+                glm::vec3                           min_extents;
             };
 
             //--------------------------------------------------------------------------------

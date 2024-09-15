@@ -84,9 +84,10 @@ namespace Razix {
 
                         header.index_count           = submesh.index_count;
                         header.vertex_count          = submesh.vertex_count;
-                        header.skeletal_vertex_count = static_cast<uint32_t>(import_result.skeletal_vertices.size());
+                        header.skeletal_vertex_count = static_cast<uint32_t>(submesh.vertex_count);
                         header.material_count        = static_cast<uint32_t>(import_result.materials.size());
                         header.mesh_count            = static_cast<uint32_t>(import_result.submeshes.size());
+                        header.blobs_count           = VERTEX_ATTRIBS_COUNT;
                         header.max_extents           = submesh.max_extents;
                         header.min_extents           = submesh.min_extents;
                         header.base_index            = submesh.base_index;
@@ -105,6 +106,7 @@ namespace Razix {
                         // Write mesh header
                         WRITE_AND_OFFSET(f, (char*) &header, sizeof(BINMeshFileHeader), offset);
 
+#if RAZIX_ASSET_VERSION == RAZIX_ASSET_VERSION_V1
                         // Write vertices
                         if (import_result.vertices.size() > 0) {
                             uint32_t start_vtx_idx = submesh.base_vertex;
@@ -118,6 +120,7 @@ namespace Razix {
                         if (import_result.skeletal_vertices.size() > 0) {
                             WRITE_AND_OFFSET(f, (char*) &import_result.skeletal_vertices[0], sizeof(Graphics::RZSkeletalVertex) * import_result.skeletal_vertices.size(), offset);
                         }
+#endif
 
                         // Write indices
                         if (import_result.indices.size() > 0) {
@@ -127,6 +130,50 @@ namespace Razix {
 
                             WRITE_AND_OFFSET(f, (char*) &subData[0], sizeof(uint32_t) * submesh.index_count, offset);
                         }
+
+// Write vertex data attrib by attrib
+#if RAZIX_ASSET_VERSION == RAZIX_ASSET_VERSION_V2
+
+                        // write positions
+                        BINBlobHeader h;
+                        h.stride = sizeof(glm::vec3);
+                        h.size   = static_cast<uint32_t>(import_result.vertices.Position.size()) * h.stride;
+                        strcpy_s(h.typeName, "POSITION:R32G32B32");
+                        if (import_result.vertices.Position.size() > 0)
+                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Position[0], h.size, offset);
+
+                        // Color
+                        h        = {};
+                        h.stride = sizeof(glm::vec4);
+                        h.size   = static_cast<uint32_t>(import_result.vertices.Color.size()) * h.stride;
+                        strcpy_s(h.typeName, "COLOR:R32G32B32A32");
+                        if (import_result.vertices.Color.size() > 0)
+                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Color[0], h.size, offset);
+
+                        // UV
+                        h        = {};
+                        h.stride = sizeof(glm::vec3);
+                        h.size   = static_cast<uint32_t>(import_result.vertices.UV.size()) * h.stride;
+                        strcpy_s(h.typeName, "TEXCOORD:R32G32");
+                        if (import_result.vertices.UV.size() > 0)
+                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.UV[0], h.size, offset);
+
+                        // Normal
+                        h        = {};
+                        h.stride = sizeof(glm::vec3);
+                        h.size   = static_cast<uint32_t>(import_result.vertices.Normal.size()) * h.stride;
+                        strcpy_s(h.typeName, "NORMAL:R32G32B32");
+                        if (import_result.vertices.Normal.size() > 0)
+                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Normal[0], h.size, offset);
+
+                        // Tangent
+                        h        = {};
+                        h.stride = sizeof(glm::vec3);
+                        h.size   = static_cast<uint32_t>(import_result.vertices.Tangent.size()) * h.stride;
+                        strcpy_s(h.typeName, "TANGENT:R32G32B32");
+                        if (import_result.vertices.Tangent.size() > 0)
+                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Tangent[0], h.size, offset);
+#endif
 
                         f.close();
 
