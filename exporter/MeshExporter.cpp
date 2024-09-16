@@ -56,7 +56,7 @@ namespace Razix {
                         magic[1]  = 'a';
                         magic[2]  = 'z';
                         magic[3]  = 'i';
-                        magic[4]  = 'z';
+                        magic[4]  = 'x';
                         magic[5]  = '_';
                         magic[6]  = 'e';
                         magic[7]  = 'n';
