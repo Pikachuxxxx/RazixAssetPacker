@@ -154,7 +154,7 @@ namespace Razix {
 
                         // UV
                         h        = {};
-                        h.stride = sizeof(glm::vec3);
+                        h.stride = sizeof(glm::vec2);
                         h.size   = static_cast<uint32_t>(import_result.vertices.UV.size()) * h.stride;
                         strcpy_s(h.typeName, "TEXCOORD:R32G32");
                         WRITE_AND_OFFSET(f, (char*) &h, sizeof(BINBlobHeader), offset);
