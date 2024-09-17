@@ -148,7 +148,7 @@ namespace Razix {
                         result.submeshes[i].materialName   = result.materials[result.submeshes[i].material_index].m_Name;
                     }
 
-                    //result.vertices.resize(vertex_count);
+                    result.vertices.setSize(vertex_count);
                     result.indices.resize(index_count);
                     temp_indices.resize(index_count);
 
@@ -174,12 +174,12 @@ namespace Razix {
                         result.submeshes[i].max_extents = glm::vec3(temp_mesh->mVertices[0].x, temp_mesh->mVertices[0].y, temp_mesh->mVertices[0].z);
                         result.submeshes[i].min_extents = glm::vec3(temp_mesh->mVertices[0].x, temp_mesh->mVertices[0].y, temp_mesh->mVertices[0].z);
 
-// Read vertex data
-#if RAZIX_ASSET_VERSION == RAZIX_ASSET_VERSION_V1
+                        // Read vertex data
+                        //#if RAZIX_ASSET_VERSION == RAZIX_ASSET_VERSION_V1
                         for (uint32_t k = 0; k < scene->mMeshes[i]->mNumVertices; k++) {
-                            result.vertices.Position             = glm::vec3(temp_mesh->mVertices[k].x, temp_mesh->mVertices[k].y, temp_mesh->mVertices[k].z);
-                            glm::vec3 n                          = glm::vec3(temp_mesh->mNormals[k].x, temp_mesh->mNormals[k].y, temp_mesh->mNormals[k].z);
-                            result.vertices[vertex_index].Normal = n;
+                            result.vertices.Position[vertex_index] = glm::vec3(temp_mesh->mVertices[k].x, temp_mesh->mVertices[k].y, temp_mesh->mVertices[k].z);
+                            glm::vec3 n                            = glm::vec3(temp_mesh->mNormals[k].x, temp_mesh->mNormals[k].y, temp_mesh->mNormals[k].z);
+                            result.vertices.Normal[vertex_index]   = n;
 
                             if (temp_mesh->mTangents) {
                                 glm::vec3 t = glm::vec3(temp_mesh->mTangents[k].x, temp_mesh->mTangents[k].y, temp_mesh->mTangents[k].z);
@@ -189,52 +189,13 @@ namespace Razix {
                                 if (glm::dot(glm::cross(n, t), b) < 0.0f)
                                     t *= -1.0f;    // Flip tangent
 
-                                result.vertices[vertex_index].Tangent = t;
+                                result.vertices.Tangent[vertex_index] = t;
                                 //result.vertices[vertex_index].BiTangent = b;
                             }
 
                             if (temp_mesh->HasTextureCoords(0))
-                                result.vertices[vertex_index].UV = glm::vec2(temp_mesh->mTextureCoords[0][k].x, temp_mesh->mTextureCoords[0][k].y);
+                                result.vertices.UV[vertex_index] = glm::vec2(temp_mesh->mTextureCoords[0][k].x, temp_mesh->mTextureCoords[0][k].y);
 
-                            if (result.vertices[vertex_index].Position.x > result.submeshes[i].max_extents.x)
-                                result.submeshes[i].max_extents.x = result.vertices[vertex_index].Position.x;
-                            if (result.vertices[vertex_index].Position.y > result.submeshes[i].max_extents.y)
-                                result.submeshes[i].max_extents.y = result.vertices[vertex_index].Position.y;
-                            if (result.vertices[vertex_index].Position.z > result.submeshes[i].max_extents.z)
-                                result.submeshes[i].max_extents.z = result.vertices[vertex_index].Position.z;
-
-                            if (result.vertices[vertex_index].Position.x < result.submeshes[i].min_extents.x)
-                                result.submeshes[i].min_extents.x = result.vertices[vertex_index].Position.x;
-                            if (result.vertices[vertex_index].Position.y < result.submeshes[i].min_extents.y)
-                                result.submeshes[i].min_extents.y = result.vertices[vertex_index].Position.y;
-                            if (result.vertices[vertex_index].Position.z < result.submeshes[i].min_extents.z)
-                                result.submeshes[i].min_extents.z = result.vertices[vertex_index].Position.z;
-
-                            vertex_index++;
-                        }
-#else
-                        // Copy all 3 component stuff directly
-                        uint32_t numVerts = temp_mesh->mNumVertices;
-                        result.vertices.Position.resize(numVerts);
-                        memcpy(result.vertices.Position.data(), temp_mesh->mVertices, numVerts);
-                        result.vertices.Normal.resize(numVerts);
-                        memcpy(result.vertices.Normal.data(), temp_mesh->mNormals, numVerts);
-                        if (temp_mesh->mTangents) {
-                            result.vertices.Tangent.resize(numVerts);
-                            memcpy(result.vertices.Tangent.data(), temp_mesh->mTangents, numVerts);
-                        }
-                        // color: 4 component
-                        if (temp_mesh->mColors[0]) {
-                            result.vertices.Color.resize(numVerts);
-                            memcpy(result.vertices.Color.data(), temp_mesh->mColors[0], numVerts);
-                        }
-
-                        // UV is 3 so do it one by one
-                        for (uint32_t vertex_index = 0; vertex_index < numVerts; ++vertex_index) {
-                            if (temp_mesh->HasTextureCoords(0))
-                                result.vertices.UV.push_back(glm::vec2(temp_mesh->mTextureCoords[0][vertex_index].x, temp_mesh->mTextureCoords[0][vertex_index].y));
-
-                            // calculate AABB at the same time
                             if (result.vertices.Position[vertex_index].x > result.submeshes[i].max_extents.x)
                                 result.submeshes[i].max_extents.x = result.vertices.Position[vertex_index].x;
                             if (result.vertices.Position[vertex_index].y > result.submeshes[i].max_extents.y)
@@ -248,9 +209,47 @@ namespace Razix {
                                 result.submeshes[i].min_extents.y = result.vertices.Position[vertex_index].y;
                             if (result.vertices.Position[vertex_index].z < result.submeshes[i].min_extents.z)
                                 result.submeshes[i].min_extents.z = result.vertices.Position[vertex_index].z;
-                        }
 
-#endif
+                            vertex_index++;
+                        }
+                        //#else
+                        // Copy all 3 component stuff directly
+                        //uint32_t numVerts = temp_mesh->mNumVertices;
+                        //memcpy(result.vertices.Position.data(), temp_mesh->mVertices, numVerts);
+                        //memcpy(result.vertices.Normal.data(), temp_mesh->mNormals, numVerts);
+                        //if (temp_mesh->mTangents) {
+                        //    memcpy(result.vertices.Tangent.data(), temp_mesh->mTangents, numVerts);
+                        //} else
+                        //    result.vertices.Tangent.resize(0);
+                        //// color: 4 component
+                        //if (temp_mesh->mColors[0]) {
+                        //    memcpy(result.vertices.Color.data(), temp_mesh->mColors[0], numVerts);
+                        //} else
+                        //    result.vertices.Color.resize(0);
+
+                        //// UV
+                        //for (uint32_t k = 0; k < temp_mesh->mNumVertices; k++) {
+                        //    if (temp_mesh->HasTextureCoords(0))
+                        //        result.vertices.UV[vertex_index] = glm::vec2(temp_mesh->mTextureCoords[0][k].x, temp_mesh->mTextureCoords[0][k].y);
+
+                        //    if (result.vertices.Position[vertex_index].x > result.submeshes[i].max_extents.x)
+                        //        result.submeshes[i].max_extents.x = result.vertices.Position[vertex_index].x;
+                        //    if (result.vertices.Position[vertex_index].y > result.submeshes[i].max_extents.y)
+                        //        result.submeshes[i].max_extents.y = result.vertices.Position[vertex_index].y;
+                        //    if (result.vertices.Position[vertex_index].z > result.submeshes[i].max_extents.z)
+                        //        result.submeshes[i].max_extents.z = result.vertices.Position[vertex_index].z;
+
+                        //    if (result.vertices.Position[vertex_index].x < result.submeshes[i].min_extents.x)
+                        //        result.submeshes[i].min_extents.x = result.vertices.Position[vertex_index].x;
+                        //    if (result.vertices.Position[vertex_index].y < result.submeshes[i].min_extents.y)
+                        //        result.submeshes[i].min_extents.y = result.vertices.Position[vertex_index].y;
+                        //    if (result.vertices.Position[vertex_index].z < result.submeshes[i].min_extents.z)
+                        //        result.submeshes[i].min_extents.z = result.vertices.Position[vertex_index].z;
+
+                        //    vertex_index++;
+                        //}
+
+                        //#endif
                         // Read the index data
                         for (uint32_t j = 0; j < temp_mesh->mNumFaces; j++) {
                             result.indices[idx] = temp_mesh->mFaces[j].mIndices[0];

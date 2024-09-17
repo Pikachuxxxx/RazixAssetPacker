@@ -137,47 +137,53 @@ namespace Razix {
                         // write positions
                         BINBlobHeader h;
                         h.stride = sizeof(glm::vec3);
-                        h.size   = static_cast<uint32_t>(import_result.vertices.Position.size()) * h.stride;
                         strcpy_s(h.typeName, "POSITION:R32G32B32");
+                        u32 writeSize = import_result.vertices.Position.size();
+                        h.size        = writeSize > 0 ? submesh.vertex_count * h.stride : 0;
                         WRITE_AND_OFFSET(f, (char*) &h, sizeof(BINBlobHeader), offset);
-                        if (import_result.vertices.Position.size() > 0)
-                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Position[0], h.size, offset);
+                        if (h.size > 0)
+                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Position[submesh.base_vertex], h.size, offset);
 
                         // Color
                         h        = {};
                         h.stride = sizeof(glm::vec4);
-                        h.size   = static_cast<uint32_t>(import_result.vertices.Color.size()) * h.stride;
                         strcpy_s(h.typeName, "COLOR:R32G32B32A32");
+                        writeSize = import_result.vertices.Color.size();
+                        h.size    = writeSize > 0 ? submesh.vertex_count * h.stride : 0;
                         WRITE_AND_OFFSET(f, (char*) &h, sizeof(BINBlobHeader), offset);
-                        if (import_result.vertices.Color.size() > 0)
-                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Color[0], h.size, offset);
+                        if (h.size > 0)
+                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Color[submesh.base_vertex], h.size, offset);
 
                         // UV
                         h        = {};
                         h.stride = sizeof(glm::vec2);
-                        h.size   = static_cast<uint32_t>(import_result.vertices.UV.size()) * h.stride;
                         strcpy_s(h.typeName, "TEXCOORD:R32G32");
+                        writeSize = import_result.vertices.UV.size();
+                        h.size    = writeSize > 0 ? submesh.vertex_count * h.stride : 0;
                         WRITE_AND_OFFSET(f, (char*) &h, sizeof(BINBlobHeader), offset);
-                        if (import_result.vertices.UV.size() > 0)
-                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.UV[0], h.size, offset);
+                        if (h.size > 0)
+                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.UV[submesh.base_vertex], h.size, offset);
 
                         // Normal
                         h        = {};
                         h.stride = sizeof(glm::vec3);
-                        h.size   = static_cast<uint32_t>(import_result.vertices.Normal.size()) * h.stride;
                         strcpy_s(h.typeName, "NORMAL:R32G32B32");
+                        writeSize = import_result.vertices.Normal.size();
+                        h.size    = writeSize > 0 ? submesh.vertex_count * h.stride : 0;
                         WRITE_AND_OFFSET(f, (char*) &h, sizeof(BINBlobHeader), offset);
-                        if (import_result.vertices.Normal.size() > 0)
-                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Normal[0], h.size, offset);
+                        if (h.size > 0)
+                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Normal[submesh.base_vertex], h.size, offset);
 
                         // Tangent
                         h        = {};
                         h.stride = sizeof(glm::vec3);
-                        h.size   = static_cast<uint32_t>(import_result.vertices.Tangent.size()) * h.stride;
                         strcpy_s(h.typeName, "TANGENT:R32G32B32");
+                        writeSize = import_result.vertices.Tangent.size();
+                        h.size    = writeSize > 0 ? submesh.vertex_count * h.stride : 0;
                         WRITE_AND_OFFSET(f, (char*) &h, sizeof(BINBlobHeader), offset);
-                        if (import_result.vertices.Tangent.size() > 0)
-                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Tangent[0], h.size, offset);
+                        if (h.size > 0)
+                            WRITE_AND_OFFSET(f, (char*) &import_result.vertices.Tangent[submesh.base_vertex], h.size, offset);
+
 #endif
 
                         f.close();
